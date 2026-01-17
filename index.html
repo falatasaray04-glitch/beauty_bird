@@ -277,6 +277,14 @@
     }
     .settings-panel .title { margin: 0; text-align: center; color: #fff; font-weight: 900; letter-spacing: 1px; }
 
+    /* Ayar sürgüleri için tam genişlik düzenlemesi */
+    .settings-panel input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      display: block;
+      margin-top: 5px;
+    }
+
     .hidden { opacity: 0; pointer-events: none; visibility: hidden; }
   </style>
 </head>
@@ -357,11 +365,11 @@
       <div class="settings-panel" id="settingsPanel">
         <h3 class="title">OYUN AYARLARI</h3>
         <div style="display:grid; gap:30px; margin-top:30px;">
-          <label>
+          <label style="display: block;">
             <div class="stats-label" id="sfxLabel" style="margin-bottom:10px; font-size: 12px; color: #fff;">Efekt Sesleri (%55)</div>
             <input id="sfxRange" type="range" min="0" max="1" step="0.01">
           </label>
-          <label>
+          <label style="display: block;">
             <div class="stats-label" id="bgmLabel" style="margin-bottom:10px; font-size: 12px; color: #fff;">Müzik Sesi (%22)</div>
             <input id="bgmRange" type="range" min="0" max="1" step="0.01">
           </label>
@@ -494,6 +502,7 @@
     let sinking = false;
     let sinkAmount = 0;
     let score = 0;
+    let lastSessionScore = 0; // Menüde gösterilecek son skor
     let best = Number(localStorage.getItem('flappy_best') || 0);
     let lastTime = 0;
     let t = 0;
@@ -572,7 +581,7 @@
       
       themeText.textContent = themes[currentTheme].name;
       bestScoreVal.textContent = best;
-      lastScoreVal.textContent = score;
+      lastScoreVal.textContent = lastSessionScore; // DÜZELTME: Session skorunu göster
 
       const theme = themes[currentTheme];
       if (theme.isImage) {
@@ -657,7 +666,7 @@
       bird.y = Math.round(H * 0.45); 
       bird.vy = 0; 
       bird.rot = 0;
-      score = 0; 
+      score = 0; // Burada skoru sıfırlıyoruz ama lastSessionScore'da eski değer duruyor
       t = 0;
       spawnInitialPipes();
       menuOverlay.classList.remove('hidden');
@@ -681,7 +690,7 @@
     playBtn.onclick = (e) => { e.stopPropagation(); startGame(); };
     settingsBtn.onclick = (e) => { e.stopPropagation(); settingsPanel.style.display = 'flex'; };
     closeSettingsBtn.onclick = (e) => { e.stopPropagation(); settingsPanel.style.display = 'none'; };
-    resetBtn.onclick = (e) => { e.stopPropagation(); best = 0; score = 0; localStorage.setItem('flappy_best', '0'); updateMenuUI(); };
+    resetBtn.onclick = (e) => { e.stopPropagation(); best = 0; score = 0; lastSessionScore = 0; localStorage.setItem('flappy_best', '0'); updateMenuUI(); };
 
     document.getElementById('charLeft').onclick = (e) => { e.stopPropagation(); switchCharacter(-1); };
     document.getElementById('charRight').onclick = (e) => { e.stopPropagation(); switchCharacter(1); };
@@ -787,6 +796,7 @@
 
     function end(){
       gameOver = true;
+      lastSessionScore = score; // DÜZELTME: Oyun biterken skoru session değişkenine aktar
       if(score > best) { best = score; localStorage.setItem('flappy_best', best); }
       bgm.pause(); bgm.currentTime = 0;
       setTimeout(resetRound, 300);
